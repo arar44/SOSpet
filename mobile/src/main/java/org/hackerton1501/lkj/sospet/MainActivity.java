@@ -1,22 +1,22 @@
 package org.hackerton1501.lkj.sospet;
 
-import android.app.Activity;
-
 import android.app.ActionBar;
+import android.app.Activity;
 import android.app.Fragment;
 import android.app.FragmentManager;
-import android.content.Context;
-import android.os.Build;
 import android.os.Bundle;
-import android.view.Gravity;
+import android.support.v4.widget.DrawerLayout;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
-import android.support.v4.widget.DrawerLayout;
-import android.widget.ArrayAdapter;
-import android.widget.TextView;
+
+import com.google.android.gms.gcm.GoogleCloudMessaging;
+
+import org.hackerton1501.lkj.sospet.gcm.GCMTask;
+import org.hackerton1501.lkj.sospet.gcm.GCMUtil;
 
 
 public class MainActivity extends Activity
@@ -37,6 +37,8 @@ public class MainActivity extends Activity
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        GCMRegisterStart();
+
         mNavigationDrawerFragment = (NavigationDrawerFragment)
                 getFragmentManager().findFragmentById(R.id.navigation_drawer);
         mTitle = getTitle();
@@ -45,6 +47,21 @@ public class MainActivity extends Activity
         mNavigationDrawerFragment.setUp(
                 R.id.navigation_drawer,
                 (DrawerLayout) findViewById(R.id.drawer_layout));
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+
+        Log.e("onResume", "GCMUtil.sendGCMPush");
+        GCMUtil.sendGCMPush("강아지 응급환자입니다.\n이상협 : 010-1111-2222\n개(수)14년10월");
+    }
+
+    @Override
+    protected void onDestroy() {
+        GCMStop();
+
+        super.onDestroy();
     }
 
     @Override
@@ -146,4 +163,50 @@ public class MainActivity extends Activity
         }
     }
 
+
+    /**
+     * GCM register
+     */
+    public GoogleCloudMessaging _gcm;
+    public GCMTask _gcmTask;
+    private String _gcm_device_token;
+
+    private void GCMRegisterStart() {
+        try {
+            // Check device for Play Services APK. If check succeeds, proceed with GCM registration.
+            if (GCMUtil.checkPlayServices(this)) {
+                _gcm = GoogleCloudMessaging.getInstance(this);
+                _gcm_device_token = GCMUtil.getRegistrationId(this);
+                Log.d("GCM", "deviceToken===>>" + _gcm_device_token);
+                if (_gcm_device_token == null || (_gcm_device_token == null  || "".equals(_gcm_device_token))) {
+                    _gcmTask = new GCMTask(this, _gcm, new GCMTask.CompleteStoreRegistrationId() {
+
+                        @Override
+                        public void onComplete(String $gcmDeviceToken) {
+                            Log.e("onComplete", "deviceToken : " + $gcmDeviceToken);
+                            _gcm_device_token = $gcmDeviceToken;
+                        }
+                    });
+                    _gcmTask.execute(null, null, null);
+                }
+            } else {
+                Log.i("GCM", "No valid Google Play Services APK found.");
+            }
+            // ToastUtil.show(this, StringConstant.STR_GCM_MESSAGE);
+            Log.d("GCM", "all deviceToken===>>" + _gcm_device_token);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void GCMStop() {
+        try {
+            if (_gcmTask != null) {
+                _gcmTask.cancel(true);
+                _gcmTask = null;
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
 }

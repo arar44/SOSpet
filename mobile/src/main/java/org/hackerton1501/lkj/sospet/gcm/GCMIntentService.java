@@ -16,15 +16,9 @@
 
 package org.hackerton1501.lkj.sospet.gcm;
 
-import java.util.Iterator;
-import java.util.List;
-
-import kr.co.i2max.mobile.nia.HomeFrameActivity;
-import kr.co.i2max.mobile.nia.R;
 import android.app.ActivityManager;
 import android.app.ActivityManager.RunningTaskInfo;
 import android.app.IntentService;
-import android.app.Notification;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.content.Context;
@@ -32,13 +26,17 @@ import android.content.Intent;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.PowerManager;
-import android.os.SystemClock;
 import android.os.PowerManager.WakeLock;
+import android.os.SystemClock;
 import android.support.v4.app.NotificationCompat;
-import android.support.v4.app.TaskStackBuilder;
 import android.util.Log;
 
 import com.google.android.gms.gcm.GoogleCloudMessaging;
+
+import org.hackerton1501.lkj.sospet.R;
+
+import java.util.Iterator;
+import java.util.List;
 
 /**
  * This {@code IntentService} does the actual handling of the GCM message.
@@ -73,9 +71,9 @@ public class GCMIntentService extends IntentService {
              * not interested in, or that you don't recognize.
              */
             if (GoogleCloudMessaging.MESSAGE_TYPE_SEND_ERROR.equals(messageType)) {
-                sendNotification("Send error: " + extras.toString(), 0);
+                addNotification("Send error: " + extras.toString(), 0);
             } else if (GoogleCloudMessaging.MESSAGE_TYPE_DELETED.equals(messageType)) {
-                sendNotification("Deleted messages on server: " + extras.toString(), 0);
+                addNotification("Deleted messages on server: " + extras.toString(), 0);
             // If it's a regular GCM message, do some work.
             } else if (GoogleCloudMessaging.MESSAGE_TYPE_MESSAGE.equals(messageType)) {
                 // This loop represents the service doing some work.
@@ -89,7 +87,7 @@ public class GCMIntentService extends IntentService {
                 }
                 Log.i(TAG, "Completed work @ " + SystemClock.elapsedRealtime());
                 // Post notification of received message.
-                sendNotification(extras.getString("message"), 1);
+                addNotification(extras.getString("message"), 1);
                 Log.i(TAG, "Received: " + extras.toString());
             }
         }
@@ -100,33 +98,41 @@ public class GCMIntentService extends IntentService {
     // Put the message into a notification and post it.
     // This is just one simple example of what you might choose to do with
     // a GCM message.
-    private void sendNotification(String msg, int badge) {
-    	Log.d("sendNotification", msg);
+    private void addNotification(String msg, int badge) {
+    	Log.d("sendNotification", ""+msg);
         int icon = R.drawable.ic_launcher;
         long when = System.currentTimeMillis();
         wakeUp();
         mNotificationManager = (NotificationManager)
                 this.getSystemService(Context.NOTIFICATION_SERVICE);
     	    Intent  kIntent = new Intent();
-    	    kIntent.setAction("kr.co.i2max.RECEIVE_NOTI");
-    	    PendingIntent contentIntent = PendingIntent.getBroadcast(this, 0, kIntent, PendingIntent.FLAG_UPDATE_CURRENT | Notification.FLAG_AUTO_CANCEL);
-    	
+    	    kIntent.setAction("org.hackerton1501.lkj.sospet.RECEIVE_NOTI");
+    	    PendingIntent contentIntent = PendingIntent.getBroadcast(this, 0, kIntent, PendingIntent.FLAG_UPDATE_CURRENT);
+
+
     	
     	if (Build.VERSION_CODES.ICE_CREAM_SANDWICH_MR1 > Build.VERSION.SDK_INT) {
+            // Create the action
+            NotificationCompat.Action action =
+                    new NotificationCompat.Action.Builder(R.drawable.ic_launcher, getString(R.string.action_example), contentIntent).build();
+
             NotificationCompat.Builder mBuilder =
                     new NotificationCompat.Builder(this)
             .setSmallIcon(icon)
-            .setContentTitle("알림 메세지")
+            .setContentTitle("응급 메세지")
             .setWhen(when)
             .setStyle(new NotificationCompat.BigTextStyle())
             .setContentText(msg)
-            .setAutoCancel(true);
-            mBuilder.setContentIntent(contentIntent);
+            .setAutoCancel(true)
+            .setContentIntent(contentIntent)
+
+            .extend(new NotificationCompat.WearableExtender().addAction(action));
             mNotificationManager.notify(NOTIFICATION_ID, mBuilder.build());
+
     	} else {
-    	    NotificationCompat.Builder mBuilder = new NotificationCompat.Builder(this); 
-    	    mBuilder.setSmallIcon(R.drawable.ic_launcher);//required 
-    	    mBuilder.setContentTitle("알림 메세지");//required 
+    	    NotificationCompat.Builder mBuilder = new NotificationCompat.Builder(this);
+    	    mBuilder.setSmallIcon(icon);//required
+    	    mBuilder.setContentTitle("응급 메세지");//required
     	    mBuilder.setContentText(msg);//required 
 //    	    mBuilder.setTicker("tickerText");//optional 
     	    mBuilder.setNumber(10);//optional 

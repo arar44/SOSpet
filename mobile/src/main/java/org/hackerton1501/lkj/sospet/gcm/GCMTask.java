@@ -1,13 +1,14 @@
 package org.hackerton1501.lkj.sospet.gcm;
 
-import java.io.IOException;
-
-import kr.co.i2max.mobile.nia.constants.NetworkConstant;
 import android.content.Context;
 import android.os.AsyncTask;
 import android.util.Log;
 
 import com.google.android.gms.gcm.GoogleCloudMessaging;
+
+import org.hackerton1501.lkj.sospet.constants.AppConstant;
+
+import java.io.IOException;
 
 public class GCMTask extends AsyncTask<Void, Void, String> {
 	private Context _context;
@@ -25,7 +26,7 @@ public class GCMTask extends AsyncTask<Void, Void, String> {
 	@Override
 	protected String doInBackground(Void... params) {
 		try {
-			_gcm_device_token = _gcm.register(NetworkConstant.SENDER_ID);
+			_gcm_device_token = _gcm.register(AppConstant.SENDER_ID);
 			GCMUtil.storeRegistrationId(_context, _gcm_device_token);
 			
 			//send gcm token to i2talk server by snshelper

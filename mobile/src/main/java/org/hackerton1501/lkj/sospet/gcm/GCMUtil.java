@@ -1,12 +1,5 @@
 package org.hackerton1501.lkj.sospet.gcm;
 
-import java.util.ArrayList;
-
-import kr.co.i2max.mobile.net.i2UrlHelper;
-import kr.co.i2max.mobile.nia.constants.NetworkConstant;
-
-import org.apache.http.message.BasicNameValuePair;
-
 import android.app.Activity;
 import android.content.Context;
 import android.content.SharedPreferences;
@@ -16,6 +9,9 @@ import android.util.Log;
 
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GooglePlayServicesUtil;
+
+import org.hackerton1501.lkj.sospet.constants.AppConstant;
+import org.hackerton1501.lkj.sospet.http.HttpRequestTaskextends;
 
 public class GCMUtil {
 	public static final String TAG = "GCMUtil";
@@ -51,8 +47,8 @@ public class GCMUtil {
 	 *         registration ID.
 	 */
 	public static String getRegistrationId(Context context) {
-		final SharedPreferences prefs = getGcmPreferences(context);
-		String registrationId = prefs.getString(NetworkConstant.PREF_GCM_TOKEN, "");
+		final SharedPreferences prefs = getPreferences(context);
+		String registrationId = prefs.getString(AppConstant.PREF_GCM_TOKEN, "");
 		if ("".equals(registrationId)) {
 			Log.i(TAG, "Registration not found.");
 			return "";
@@ -90,11 +86,11 @@ public class GCMUtil {
      * @param regId registration ID
      */
     public static void storeRegistrationId(Context context, String regId) {
-        final SharedPreferences prefs = getGcmPreferences(context);
+        final SharedPreferences prefs = getPreferences(context);
         int appVersion = getAppVersion(context);
         Log.i(TAG, "Saving regId on app version " + appVersion);
         SharedPreferences.Editor editor = prefs.edit();
-        editor.putString(NetworkConstant.PREF_GCM_TOKEN, regId);
+        editor.putString(AppConstant.PREF_GCM_TOKEN, regId);
         editor.putInt(PROPERTY_APP_VERSION, appVersion);
         editor.commit();
     }
@@ -102,7 +98,7 @@ public class GCMUtil {
 	/**
 	 * @return Application's {@code SharedPreferences}.
 	 */
-	private static SharedPreferences getGcmPreferences(Context context) {
+	private static SharedPreferences getPreferences(Context context) {
 		// This sample app persists the registration ID in shared preferences,
 		// but
 		// how you store the regID in your app is up to you.
@@ -155,4 +151,11 @@ public class GCMUtil {
 //        .requestServerPostList(kUrl, i2UrlHelper.getTokenHeader(kOauthToken), kParamList);
 //
 //    }
+
+    //
+    public static void sendGCMPush(String msg) {
+//        String jsonMsg = "{ \"data\": {\"message\":\"hello SOSpet1\", \"badge\": 11}, \"registration_ids\":[ \"APA91bEhJqTFLTs-s0yuhldlA7NPpZQ-qgI9rhJxn0qOvhFUXE7ZtenJj1ANsh5ro_CbzfVvaKnFpKDgLF5NIVAE5YhNK0BmTM3oUbatgUZBxJz5SUZKpg1zDP-L54P65yPLw1LFQvY3mPRGO8gX9FK6mtvCsufKtFZNO12NaHEAUQVnqCpeIC0\"]}";
+        String jsonMsg = "{ \"data\": {\""+msg+"\":\"hello SOSpet1\", \"badge\": 11}, \"registration_ids\":[ \"APA91bEhJqTFLTs-s0yuhldlA7NPpZQ-qgI9rhJxn0qOvhFUXE7ZtenJj1ANsh5ro_CbzfVvaKnFpKDgLF5NIVAE5YhNK0BmTM3oUbatgUZBxJz5SUZKpg1zDP-L54P65yPLw1LFQvY3mPRGO8gX9FK6mtvCsufKtFZNO12NaHEAUQVnqCpeIC0\"]}";
+        new HttpRequestTaskextends().execute(AppConstant.GCM_SERVER_URL, AppConstant.SEND_API_KEY, jsonMsg);
+    }
 }

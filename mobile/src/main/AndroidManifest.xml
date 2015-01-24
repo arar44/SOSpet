@@ -2,9 +2,23 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="org.hackerton1501.lkj.sospet" >
 
+    <uses-permission android:name="android.permission.INTERNET" />
+
+    <permission
+        android:name="org.hackerton1501.lkj.sospet.permission.C2D_MESSAGE"
+        android:protectionLevel="signature" />
+
+    <uses-permission android:name="org.hackerton1501.lkj.sospet.permission.C2D_MESSAGE" />
+
+    <!-- This app has permission to register and receive data message. -->
+    <uses-permission android:name="com.google.android.c2dm.permission.RECEIVE" />
+    <uses-permission android:name="android.permission.WAKE_LOCK" />
+    <uses-permission android:name="android.permission.REORDER_TASKS" />
+    <uses-permission android:name="android.permission.CALL_PHONE" />
+
     <application
         android:allowBackup="true"
-        android:icon="@mipmap/ic_launcher"
+        android:icon="@drawable/ic_launcher"
         android:label="@string/app_name"
         android:theme="@style/AppTheme" >
         <activity
@@ -15,6 +29,47 @@
 
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
+        </activity>
+
+        <service
+            android:name=".gcm.GCMIntentService"
+            android:enabled="true" />
+        <!--
+          GCM
+          WakefulBroadcastReceiver that will receive intents from GCM
+          services and hand them to the custom IntentService.
+
+          The com.google.android.c2dm.permission.SEND permission is necessary
+          so only GCM services can send data messages for the app.
+        -->
+        <receiver
+            android:name=".gcm.GCMBroadcastReceiver"
+            android:permission="com.google.android.c2dm.permission.SEND" >
+            <intent-filter>
+
+                <!-- Receives the actual messages. -->
+                <action android:name="com.google.android.c2dm.intent.RECEIVE" />
+
+                <category android:name="kr.co.i2max.i2talk" />
+            </intent-filter>
+        </receiver>
+        <receiver android:name=".gcm.NotificationReceiver" >
+            <intent-filter>
+                <action android:name="org.hackerton1501.lkj.sospet.RECEIVE_NOTI" />
+            </intent-filter>
+        </receiver>
+
+        <meta-data
+            android:name="com.google.android.gms.version"
+            android:value="@integer/google_play_services_version" />
+
+        <activity
+            android:name=".ResuqestSOSActivity"
+            android:label="@string/title_activity_emergency" >
+        </activity>
+        <activity
+            android:name=".ReceiveSOSActivity"
+            android:label="@string/title_activity_response" >
         </activity>
     </application>
 
